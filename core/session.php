@@ -18,6 +18,16 @@ class Session
 	public function logout(){
 		unset($_SESSION[$this->ses_type]);
 	}
+
+	public function set_msg($var_name,$value){
+		$_SESSION[$var_name]=$value;
+	}
+	public function unset_msg($var_name){
+		unset($_SESSION[$var_name]);
+	}
+	public function get_msg($var_name){
+		return ($_SESSION[$var_name]);
+	}
 }
 
 ?>

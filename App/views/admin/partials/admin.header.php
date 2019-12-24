@@ -4,19 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-
   <title>Admin | COSY AIRCONDITIONERS</title>
-
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
-  <!-- IonIcons -->
-  <!-- <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"> -->
-  <!-- Theme style -->
-  <link rel="stylesheet" href="/plugins/admin-lte/css/adminlte.min.css">
-  <!-- Google Font: Source Sans Pro -->
-  <link href="/plugins/admin-lte/css/Source_Sans_Pro.css" rel="stylesheet">
+  <?php include "css.php"; ?>
 </head>
-
 <body class="hold-transition sidebar-mini">
 <!-- wrapper -->
 <div class="wrapper">
@@ -144,3 +134,25 @@
     </div>
     <!-- /.sidebar -->
   </aside>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark"><?=ucfirst($section_name);?></h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active"><?=ucfirst($section_name);?></li>
+            </ol>
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->

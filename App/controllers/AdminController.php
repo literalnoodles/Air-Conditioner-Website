@@ -7,6 +7,7 @@ class AdminController{
 	
 	public $redirect = NULL;
 	private $admin_session;
+	private $data=[];
 
 	function __construct(){
 		$this->admin_session = new Session('admin');
@@ -20,24 +21,68 @@ class AdminController{
 		$this->$model = new $model_cls(...$param);
 	}
 
-	private function load_view($view_name,$data=[]){
-		extract($data);
-		return require "../App/views/{$view_name}.view.php";
+	private function load_view($view_name){
+		extract($this->data);
+		return require "../App/views/admin/{$view_name}.view.php";
 	}
 
 	public function index(){
-		$page = filter_input(INPUT_GET,'page');
-		$section_name = ucfirst(filter_input(INPUT_GET, 'page'));
-		switch($page){
-			case NULL:
-				return $this->load_view('admin',compact("section_name"));
+		$this->data["section_name"] = filter_input(INPUT_GET, 'page');
+		$this->data["action"] = filter_input(INPUT_GET, 'action');
+		extract($this->data);
+		switch($section_name){
 			case "logout":
 				$this->admin_session->logout();
 				header('Location: /admin');
 				break;
+			case "brands":
+				switch ($action){
+					case "add":
+						$this->load_view("add-brand");
+						break;
+					case "edit":
+						$id = filter_input(INPUT_GET, 'id');
+						$this->load_model("brand");
+						$brand_data = $this->brand->load_data($id);
+						if (!$brand_data) {
+							echo "Brand not exists. Press <a href='/admin?page=brands'>this</a> to go back";
+							return;
+						}
+						$this->data += $brand_data;
+						$this->load_view("edit-brand");
+						break;
+					default:
+						$this->load_view("brands");
+				}
+				break;
 			default:
-				$this->load_view('admin',compact("section_name"));
+				$this->load_view('admin');
 		}
+	}
+
+	public function add_brand(){
+		$this->load_model('brand');
+		$this->brand->add();
+		if ($this->brand->update_status() == true) {
+			$this->admin_session->set_msg("status","success");
+		} else $this->admin_session->set_msg("status","error");
+		header("Location: /admin?page=brands");
+	}
+
+	public function edit_brand(){
+		$this->load_model('brand');
+		$this->brand->edit();
+		if ($this->brand->update_status() == true) {
+			$this->admin_session->set_msg("status","success");
+		} else $this->admin_session->set_msg("status","error");
+		header("Location: /admin?page=brands");
+	}
+
+	public function delete_brand(){
+		$this->load_model('brand');
+		$brand_id = filter_input(INPUT_POST,'id');
+		$this->brand->delete($brand_id);
+		echo $this->brand->update_status()==true ? "Delete successfully!" : "Delete fail!";
 	}
 
 	public function login(){
@@ -59,6 +104,8 @@ class AdminController{
 		}
 	}
 
-
+	public function ajax_process(){
+		require ("../App/views/admin/partials/{$_GET["type"]}.processing.php");
+	}
 }
 ?>

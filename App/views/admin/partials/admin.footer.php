@@ -1,4 +1,5 @@
-<!-- Main Footer -->
+  </div>
+  <!-- Main Footer -->
   <footer class="main-footer">
     <strong>Copyright &copy; 2019 <a href="#">Cosy Airconditioners</a>.</strong>
     All rights reserved.
@@ -7,14 +8,7 @@
     </div>
   </footer>
 </div>
-</div>
 <!-- ./wrapper -->
-
-<!-- jQuery -->
-<script src="/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="/plugins/admin-lte/js/adminlte.js"></script>
+<?php include "javascript.php"; ?>
 </body>
 </html>
