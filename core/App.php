@@ -9,7 +9,7 @@ class App{
 		if (array_key_exists($key, static::$registry)){
 			return static::$registry[$key];
 		}
-		throw new Exception("No $key is bound in the container");
+		throw new \Exception("No $key is bound in the container");
 	}
 
 }

@@ -1,8 +1,5 @@
 <?php
 namespace App\Core\Database;
-/**
- * 
- */
 class upload
 {
 	public $validated;
@@ -23,10 +20,10 @@ class upload
 		$this->file_size = $_FILES[$tag]["size"];
 	}
 	public function validation($type,$max_size){
-		if ($type=="image"){
-			if (file_exists($this->target_file)) $this->validated = 0;
-			if ($this->file_size>$max_size || $this->file_size==0) $this->validated = 0;
-		}
+		// if ($type=="image"){
+		if (file_exists($this->target_file)) $this->validated = 0;
+		if ($this->file_size>$max_size || $this->file_size==0) $this->validated = 0;
+		// }
 	}
 	public function execute(){
 		if ($this->validated) move_uploaded_file($_FILES[$this->tag]["tmp_name"], $this->target_file);

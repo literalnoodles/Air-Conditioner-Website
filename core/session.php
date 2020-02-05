@@ -20,7 +20,10 @@ class Session
 	}
 
 	public function set_msg($var_name,$value){
-		$_SESSION[$var_name]=$value;
+		if (isset($_SESSION[$var_name])) $_SESSION[$var_name].="<br>{$value}";
+		else{
+			$_SESSION[$var_name]=$value;
+		}
 	}
 	public function unset_msg($var_name){
 		unset($_SESSION[$var_name]);

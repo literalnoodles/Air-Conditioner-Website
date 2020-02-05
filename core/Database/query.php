@@ -4,25 +4,51 @@ class query{
     public $query_status;
     public function __construct($pdo){
         $this->pdo = $pdo;
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->pdo->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
     }
 
-    public function query_stm($statement,$data_arr,$fetch_type=NULL){
+    public function transaction($action){
+        switch ($action) {
+            case 'begin':
+                $this->pdo->beginTransaction();
+                break;
+            case 'rollback':
+                $this->pdo->rollBack();
+                break;
+            case 'commit':
+                $this->pdo->commit();
+                break;
+        }
+    }
+
+    public function query_stm($sql,$data_arr=NULL,$fetch_type=NULL){
         $statement = $this->pdo->prepare($sql);
         $statement->execute($data_arr);
         if (!$fetch_type) return;
         return $this->fetch($statement,$fetch_type);
     }
 
-    public function where($table,$condition_cols,$query_cols,$fetch_type="array"){
-        $table = gettype($table)=="array" ? implode(" ",$table) : $table;
-        $query_cols = gettype($query_cols)=="array" ? implode(" ",$query_cols) : $query_cols;
-        $sql = "SELECT {$query_cols} FROM {$table} WHERE ";
-        $sql.= implode(" = ? AND ",array_keys($condition_cols))." = ?";
+    public function get_last_id(){
+        return $this->pdo->lastInsertId();
+    }
+
+    public function where($table,$query_cols,$condition_cols=NULL,$fetch_type="array"){
+        $query_cols = gettype($query_cols)=="array" ? implode(", ",$query_cols) : $query_cols;
+        $sql = "SELECT {$query_cols} FROM {$table}";
+        if ($condition_cols){
+            $sql.= " WHERE ";
+            $sql.= implode(" AND ",array_map(function($x){return "{$x}=?";},array_keys($condition_cols)));
+        }
         $statement = $this->pdo->prepare($sql);
-        $statement->execute(array_values($condition_cols));
+        if ($condition_cols){
+            $statement->execute(array_values($condition_cols));
+        }else{
+            $statement->execute();
+        }
         return $this->fetch($statement,$fetch_type);
     }
-    
+
     public function insert($table,$cols,$values){
         $cols = implode(", ",$cols);
         $sql = "INSERT INTO $table({$cols}) VALUES (";
@@ -42,7 +68,7 @@ class query{
     }
 
     public function update($table,$set_arr,$condition_arr){
-        $set_str = implode(", ",array_map(function($x){return "{$x} = ?";},array_keys($set_arr)));
+        $set_str = implode(", ",array_map(function($x){return "{$x} = ? ";},array_keys($set_arr)));
         $where_str = implode("AND ",array_map(function($x){return "{$x} = ? ";},array_keys($condition_arr)));
         $sql = "UPDATE $table SET ";
         $sql.= $set_str." WHERE ";
@@ -64,18 +90,4 @@ class query{
         }
     }
 
-    // public function getQuery($table){
-    //     $statement = $this->pdo->prepare("select * from $table");
-    //     $statement->execute();
-    //     return $statement->fetchAll(PDO::FETCH_CLASS);
-    // }
-    // public function add_data($table_name,$data){
-    //     $sql = sprintf('insert into %s (%s) values (%s)',
-    //         $table_name,
-    //         implode(", ",array_keys($data)),
-    //         ":".implode(",: ",array_keys($data)),
-    //     );
-    //     $statement = $this->pdo->prepare($sql);
-    //     $statement->execute($data);
-    // }
 }

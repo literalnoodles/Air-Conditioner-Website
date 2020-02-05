@@ -18,7 +18,7 @@
             </div>
             <!-- /.card-header -->
             <div class="card-body">
-              <table id="tbl_brands" class="table table-bordered table-striped">
+              <table id="tbl_brands" class="table table-bordered table-striped" width="100%">
                 <thead>
                 <tr>
                   <th>Brand Name</th>
@@ -30,7 +30,6 @@
                   <!-- <th>Action</th> -->
                 </tr>
                 </thead>
-                
               </table>
             </div>
             <!-- /.card-body -->

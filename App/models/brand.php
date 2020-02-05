@@ -2,65 +2,89 @@
 namespace App\Models;
 use App\Core\App;
 use App\Core\Database\upload;
-/**
- * 
- */
 class brand
 {
-	// public $update_status;
 	function __construct(){
 		$this->db = App::get('database');
+		$this->post_arr=$_POST;
+		foreach ($this->post_arr as $key => $value) {
+			if ($value==='') $this->post_arr[$key]=null;
+		}
 	}
 	public function add(){
-		$post_arr = $_POST;
 		// upload image to server
 		$logo_upload = new upload("./storage/brands_logo/");
 		$logo_upload->parse_tag_name("logo");
 		$logo_upload->validation("image",1048576);
 		if ($logo_upload->validated){
-			$logo_upload->execute();
-			$post_arr["logo"] = $logo_upload->target_file;
+			$this->post_arr["logo"] = $logo_upload->target_file;
 		}else{
 			$_SESSION["msg"] ="No logo was uploaded";
 		}
-		$this->db->insert("tbl_brand",array_keys($post_arr),array_values($post_arr));
-		// $this->update_status = $db->query_status;
+		try{
+			$this->db->insert("tbl_brands",array_keys($this->post_arr),array_values($this->post_arr));
+			if ($this->db->query_status===true) $logo_upload->execute();
+		}catch(\PDOException $e){
+			handle_exception($e->getCode());
+			$this->db->query_status=false;
+		}
 	}
 
 	public function edit(){
-		$post_arr = $_POST;
+		if (array_key_exists('delete', $this->post_arr)) {
+			$logo_to_delete = $this->post_arr['delete'];
+			unset($this->post_arr['delete']);
+			$this->post_arr['logo']=null;
+		}
 		// check if having any old image
 		$old_img = filter_input(INPUT_POST, "logo");
-		// upload image to server
 		$logo_upload = new upload("./storage/brands_logo/");
 		$logo_upload->parse_tag_name("logo");
 		$logo_upload->validation("image",1048576);
 		if ($logo_upload->validated){
-			// If new img existed, delete the old image (if exists) then upload the new img
-			if ($old_img) unlink($old_img);
-			$logo_upload->execute();
-			$post_arr["logo"] = $logo_upload->target_file;
+			if ($old_img) $logo_to_delete=$old_img;
+			$this->post_arr["logo"] = $logo_upload->target_file;
 		}else{
 			$_SESSION["msg"] ="No logo was uploaded";
 		}
-		$id = $post_arr['brand_id'];
-		unset($post_arr['brand_id']);
-		$this->db->update("tbl_brand",$post_arr,["brand_id"=>$id]);
-		// $this->update_status = $db->query_status;
+		$id = $this->post_arr['brand_id'];
+		unset($this->post_arr['brand_id']);
+		try{
+			$this->db->update("tbl_brands",$this->post_arr,["brand_id"=>$id]);
+			if ($this->db->query_status===true){
+				if (file_exists($logo_to_delete)) unlink($logo_to_delete);
+				$logo_upload->execute();
+			}
+			$this->db->query_status=true;
+		}catch(\PDOException $e){
+			$this->db->query_status=false;
+		}
 	}
 
 	public function delete($id){
-		// $db = App::get('database');
-		$img = $this->db->where("tbl_brand",["brand_id"=>$id],"logo","column");
-		if ($img) unlink($img);
-		$this->db->delete("tbl_brand",["brand_id"=>$id]);
-		// $this->update_status = $db->query_status;
+		$img = $this->db->where("tbl_brands","logo",["brand_id"=>$id],"column");
+		//delete from child table first
+		$this->db->delete("tbl_products",["brand_id"=>$id]);
+		$this->db->delete("tbl_brands",["brand_id"=>$id]);
+		if ($this->db->query_status===true){
+			if ($img) unlink($img);	
+		}
 	}
 	public function load_data($id){
 		// select * from table where brand_id = id
-		$data = $this->db->where("tbl_brand",["brand_id"=>$id],"*");
+		$data = $this->db->where("tbl_brands","*",["brand_id"=>$id]);
 		return $data ? $data[0] : NULL;
 	}
+
+	public function load_names(){
+		return $this->db->where("tbl_brands",["brand_id","brand_name"]);
+	}
+
+	public function load_all($cols){
+		$cols = gettype($cols)=="array" ? $cols : array($cols);
+		return $this->db->where("tbl_brands",$cols);
+	}
+
 	public function update_status(){
 		return $this->db->query_status;
 	}
